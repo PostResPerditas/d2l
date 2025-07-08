@@ -7,3 +7,4 @@ true_w = torch.tensor([2, -3.4])
 true_b = 4.2
 feature, labels = d2l.synthetic_data(true_w, true_b, 1000)
 
+# test
