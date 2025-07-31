@@ -177,5 +177,4 @@ if __name__=="__main__":
     # print(evaluate_accuracy(net, train_iter))
     num_epochs = 10
     train_ch3(net, train_iter, test_iter, cross_entropy, num_epochs, updater)
-    
     print
