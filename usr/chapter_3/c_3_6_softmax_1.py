@@ -1,6 +1,7 @@
 import torch
 from IPython import display
 from d2l import torch as d2l
+import threading
 
 class Accumulator:  #@save
     """在n个变量上累加"""
@@ -54,9 +55,14 @@ class Animator:  #@save
         for x, y, fmt in zip(self.X, self.Y, self.fmts):
             self.axes[0].plot(x, y, fmt)
         self.config_axes()
-        display.display(self.fig)
-        display.clear_output(wait=True)
 
+        # d2l.plt.draw()
+        # d2l.plt.pause(0.001)
+        # display.display(self.fig)
+        # display.clear_output(wait=True)
+
+    def show(self):
+        display.display(self.fig)
 class Trainer:
     def __init__(
             self,
@@ -119,7 +125,7 @@ class Trainer:
             l = self._loss(y_hat, y)
             # 定制的优化器和损失函数
             l.sum().backward()
-            # 更新参数    
+            # 更新参数
             self._updater(X.shape[0])
             # 累加器累加损失、准确度和样本数
             metric.add(float(l.sum()), self._accuracy(y_hat, y), y.numel())
@@ -142,6 +148,7 @@ class Trainer:
     def run(self):
         '''训练'''
         self.epochs(self.train_iter, self.test_iter, self.num_epochs)
+        # d2l.plt.show()
 
     def predict(self, data_iter, n=6):
         """预测标签（定义见第3章）"""
@@ -153,10 +160,19 @@ class Trainer:
         d2l.show_images(
             X[0:n].reshape((n, 28, 28)), 1, n, titles=titles[0:n])
 
+def sgd(params, lr, batch_size):
+    """Minibatch stochastic gradient descent.
+
+    Defined in :numref:`sec_utils`"""
+    with torch.no_grad():
+        for param in params:
+            param -= lr * param.grad / batch_size
+            param.grad.zero_()
+
 # 训练
 train_iter, test_iter = d2l.load_data_fashion_mnist(batch_size=256)
 trainer = Trainer(train_iter=train_iter, test_iter=test_iter)
 trainer.run()
 
 # 预测
-# trainer.predict(test_iter, 10)
+trainer.predict(test_iter, 10)

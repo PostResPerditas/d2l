@@ -29,10 +29,6 @@ def softmax(X):
 # print(X_prob.sum(1))
 
 def net(X):
-    num_inputs = 784
-    num_outputs  = 10
-    W = torch.normal(0, 0.01, size=(num_inputs, num_outputs), requires_grad=True)
-    b = torch.zeros(num_outputs, requires_grad=True)
     return softmax(torch.matmul(X.reshape((-1, W.shape[0])), W) + b)
 
 # cross-entropy loss function is used as the loss function
@@ -94,7 +90,7 @@ def train_epoch_ch3(net, train_iter, loss, updater):
         if isinstance(updater, torch.optim.Optimizer):
             updater.zero_grad()
             l.mean().backward()
-            updater.setp()
+            updater.step()
         else:
             l.sum().backward()
             updater(X.shape[0])
@@ -139,8 +135,10 @@ class Animator:  #@save
         for x, y, fmt in zip(self.X, self.Y, self.fmts):
             self.axes[0].plot(x, y, fmt)
         self.config_axes()
-        display.display(self.fig)
-        display.clear_output(wait=True)
+        d2l.plt.draw()
+        d2l.plt.pause(0.001)
+        # display.display(self.fig)
+        # display.clear_output(wait=True)
 
 def train_ch3(net, train_iter, test_iter, loss, num_epochs, updater):  #@save
     """训练模型（定义见第3章）"""
@@ -154,27 +152,32 @@ def train_ch3(net, train_iter, test_iter, loss, num_epochs, updater):  #@save
     assert train_loss < 0.5, train_loss
     assert train_acc <= 1 and train_acc > 0.7, train_acc
     assert test_acc <= 1 and test_acc > 0.7, test_acc
-
-def sgd(params, lr, batch_size):
-    """Minibatch stochastic gradient descent.
-
-    Defined in :numref:`sec_linear_scratch`"""
-    with torch.no_grad():
-        for param in params:
-            param -= lr * param.grad / batch_size
-            param.grad.zero_()
+    d2l.plt.show()
 
 def updater(batch_size):
-    num_inputs = 784
-    num_outputs  = 10
-    W = torch.normal(0, 0.01, size=(num_inputs, num_outputs), requires_grad=True)
-    b = torch.zeros(num_outputs, requires_grad=True)
+    # num_inputs = 784
+    # num_outputs  = 10
+    # W = torch.normal(0, 0.01, size=(num_inputs, num_outputs), requires_grad=True)
+    # b = torch.zeros(num_outputs, requires_grad=True)
     lr = 0.1
-    # return d2l.sgd([W, b], lr, batch_size)
-    return sgd([W, b], lr, batch_size)
+    return d2l.sgd([W, b], lr, batch_size)
+
+def predict_ch3(net, test_iter, n=6):
+    '''预测标签'''
+    for X, y in test_iter:
+        break
+    trues = d2l.get_fashion_mnist_labels(y)
+    preds = d2l.get_fashion_mnist_labels(net(X).argmax(axis=1))
+    titles = [true + '\n' + pred for true, pred in zip(trues, preds)]
+    d2l.show_images(
+        X[0:n].reshape((n, 28, 28)), 1, n, titles=titles[0:n])
+    d2l.plt.show()
 
 if __name__=="__main__":
     # print(evaluate_accuracy(net, train_iter))
+
     num_epochs = 10
     train_ch3(net, train_iter, test_iter, cross_entropy, num_epochs, updater)
+
+    predict_ch3(net, test_iter)
     print
